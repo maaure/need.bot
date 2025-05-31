@@ -10,8 +10,8 @@ export default async function CriarTimeService(
   methods: ReturnType<typeof InteractionMethods>
 ) {
   const {
-    getStringOption,
-    getMemberOption,
+    getString,
+    getMember,
     createRoleIfNotExists,
     followUp,
     editReply,
@@ -24,10 +24,10 @@ export default async function CriarTimeService(
 
   const cargoCapitao = await CreateRoleCapitaoIfNotExistsService(methods);
 
-  const teamName = getStringOption("nome-do-time", required);
-  const capitao = getMemberOption("capitao");
-  const modalidade = getStringOption("modalidade");
-  const teamColor = getStringOption("cor") as keyof typeof Colors;
+  const teamName = getString("nome-do-time", required);
+  const capitao = getMember("capitao");
+  const modalidade = getString("modalidade");
+  const teamColor = getString("cor") as keyof typeof Colors;
 
   if (!teamName) {
     await editReply("Nome do time não informado!");

@@ -12,12 +12,16 @@ export function InteractionMethods(
   interaction: ChatInputCommandInteraction<"cached">
 ) {
   const { guild, member, options } = interaction;
-  function getStringOption(name: string, required?: boolean) {
+  function getString(name: string, required?: boolean) {
     return options.getString(name, required) ?? undefined;
   }
 
-  function getMemberOption(name: string) {
+  function getMember(name: string) {
     return options.getMember(name);
+  }
+
+  function getRole(name: string) {
+    return options.getRole(name);
   }
 
   function findRoleByName(roleName?: string) {
@@ -110,8 +114,9 @@ export function InteractionMethods(
   }
 
   return {
-    getStringOption,
-    getMemberOption,
+    getString,
+    getMember,
+    getRole,
     findRoleByName,
     createRoleIfNotExists,
     createRole,

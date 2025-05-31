@@ -7,11 +7,13 @@ export const { createCommand, createEvent, createResponder } = setupCreators({
       if (error instanceof Error) {
         const options = {
           content: error.message,
+          flags,
         } satisfies InteractionReplyOptions;
 
         await interaction
           .reply(options)
-          .catch(() => interaction.followUp(options));
+          .catch(() => interaction.followUp(options))
+          .catch(() => null);
         return;
       }
     },

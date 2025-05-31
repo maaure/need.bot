@@ -3,7 +3,7 @@ import {
   ApplicationCommandType,
 } from "discord.js";
 import { createCommand } from "#base"; //
-import { prisma } from "database/prisma.js";
+import { prisma } from "#database";
 
 createCommand({
   name: "test-prisma-add",
@@ -24,7 +24,6 @@ createCommand({
     },
   ],
   async run(interaction) {
-    // The global 'flags' should provide ["Ephemeral"]
     await interaction.deferReply({ flags });
 
     const entityName = interaction.options.getString("name", true);
@@ -45,8 +44,6 @@ createCommand({
       if (error instanceof Error) {
         errorMessage += `\nError: ${error.message}`;
       }
-      // The error handler in src/discord/index.ts might also catch this
-      // but providing immediate feedback is good.
       await interaction.editReply({
         content: errorMessage,
       });

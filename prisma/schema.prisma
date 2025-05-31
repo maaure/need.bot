@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -11,8 +8,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Member {
+  id        String  @id @default(uuid())
+  name      String
+  isCaptain Boolean @default(false)
+
+  teamId String?
+  team   Team?   @relation("TeamMembers", fields: [teamId], references: [id])
+
+  captainOf Team? @relation("TeamCaptain")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Modality {
+  id   String @id @default(uuid())
+  name String @unique
+
+  teams Team[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id   String @id @default(uuid())
+  name String @unique
+
+  members Member[] @relation("TeamMembers")
+
+  captainId String? @unique // Foreign key to the Member who is the captain
+  captain   Member? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  modalityId String?
+  modality   Modality? @relation(fields: [modalityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model TestEntity {
-  id    String @id @default(uuid())
-  name  String
-  value Int
+  id        String   @id @default(uuid())
+  name      String
+  value     Int
+  createdAt DateTime @default(now())
 }

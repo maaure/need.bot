@@ -1,10 +1,10 @@
 import { Colors } from "discord.js";
 import CreateChannelCategoryIfNotExistsService from "discord/services/create-categoria.service.js";
 import CreateRoleCapitaoIfNotExistsService from "discord/services/create-role-capitao.service.js";
+import CreateTeamService from "discord/services/create-team.service.js";
 import CreateVoiceChannelService from "discord/services/create-voice-channel.service.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
 import { modalidades } from "utils/modalidades.service.js";
-import { createBrotliCompress } from "zlib";
 
 export default async function CriarTimeService(
   methods: ReturnType<typeof InteractionMethods>
@@ -17,30 +17,27 @@ export default async function CriarTimeService(
     editReply,
     findVoiceChannel,
     member,
+    deferReply,
   } = methods;
+
+  deferReply();
+
   const cargoCapitao = await CreateRoleCapitaoIfNotExistsService(methods);
 
-  const nomeTime = getStringOption("nome-do-time", required);
+  const teamName = getStringOption("nome-do-time", required);
   const capitao = getMemberOption("capitao");
   const modalidade = getStringOption("modalidade");
-  const cor = getStringOption("cor") as keyof typeof Colors;
+  const teamColor = getStringOption("cor") as keyof typeof Colors;
 
-  if (!nomeTime) {
+  if (!teamName) {
+    await editReply("Nome do time não informado!");
     return;
   }
 
-  const cargoTime = await createRoleIfNotExists({
-    name: nomeTime,
-    color: cor,
-    permissions: [],
-    mentionable: true,
-  });
+  const cargoTime = await CreateTeamService({ methods, teamName, teamColor });
 
   if (!cargoTime) {
-    await followUp(
-      "Não foi possível criar o cargo do seu time! Por favor, contate um administrador."
-    );
-    return;
+    await editReply("Houve um erro ao tentar criar o time!");
   }
 
   if (capitao) {
@@ -52,7 +49,7 @@ export default async function CriarTimeService(
       );
     } catch (error) {
       console.error(`Erro ao adicionar capitão ao cargo: ${error}`);
-      followUp(
+      editReply(
         `⚠️ Não foi possível adicionar ${capitao.displayName} ao cargo. Verifique as permissões do bot.`
       );
     }
@@ -80,9 +77,9 @@ export default async function CriarTimeService(
   });
 
   try {
-    const canalVoz = await CreateVoiceChannelService({
+    await CreateVoiceChannelService({
       methods,
-      channelName: nomeTime,
+      channelName: teamName,
       role: cargoTime,
       channelCategory: categoria,
     });
@@ -90,16 +87,13 @@ export default async function CriarTimeService(
       `O canal de voz para ${cargoTime.name} foi criado com sucesso!`
     );
   } catch (err) {
-    await editReply(
-      `Houve um erro ao criar o canal de voz para o time ${cargoTime.name}, contate um administrador.`
-    );
-
     if (cargoTime && findVoiceChannel(cargoTime.name)) {
       await cargoTime.delete("Falha ao criar canal de voz associado.");
-      await followUp(
-        "ℹ️ O cargo do time foi removido devido à falha na criação do canal."
-      );
     }
+
+    throw Error(
+      `Houve um erro ao criar o canal de voz para o time ${cargoTime.name}, contate um administrador.`
+    );
   }
 
   //TODO adicionar mensagens para quando cargos já existirem e quando nao existirem
@@ -112,5 +106,7 @@ export default async function CriarTimeService(
     });
 
     await member.roles.add(cargoModalidade);
+  } else {
+    throw Error(`Não foi possível criar a modalidade de jogo ${modalidade}.`);
   }
 }

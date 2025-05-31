@@ -1,5 +1,3 @@
 export interface MemberData {
-    wallet?: {
-        coins?: number
-    }
+  name: string;
 }

@@ -88,7 +88,7 @@ export function InteractionMethods(
       permissionOverwrites: [
         {
           id: guild.roles.everyone.id,
-          deny: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.Connect],
+          deny: [PermissionFlagsBits.Connect],
         },
         {
           id: role.id,

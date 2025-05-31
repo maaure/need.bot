@@ -38,7 +38,6 @@ createCommand({
       description: "Escolha a cor do cargo do seu time",
       type: ApplicationCommandOptionType.String,
       autocomplete,
-      // choices: getColors(),
     },
   ],
   async autocomplete(interaction) {

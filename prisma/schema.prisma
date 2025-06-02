@@ -8,18 +8,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Member {
+model Player {
   id        String  @id @default(uuid())
   name      String
   isCaptain Boolean @default(false)
+  memberId  String  @unique
 
   teamId String?
-  team   Team?   @relation("TeamMembers", fields: [teamId], references: [id])
+  team   Team?   @relation("TeamPlayers", fields: [teamId], references: [id])
 
   captainOf Team? @relation("TeamCaptain")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Team      Team?    @relation(fields: [teamId], references: [id])
 }
 
 model Modality {
@@ -37,16 +39,17 @@ model Team {
   id   String @id @default(uuid())
   name String @unique
 
-  members Member[] @relation("TeamMembers")
+  members Player[] @relation("TeamPlayers")
 
-  captainId String? @unique // Foreign key to the Member who is the captain
-  captain   Member? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  captainId String? @unique
+  captain   Player? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   modalityId String?
   modality   Modality? @relation(fields: [modalityId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Player    Player[]
 }
 
 model TestEntity {

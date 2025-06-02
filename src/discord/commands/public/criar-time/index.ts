@@ -46,7 +46,7 @@ createCommand({
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);
-    interaction.deferReply({ flags });
+    await interaction.deferReply({ flags });
     await CriarTimeService(methods);
   },
 });

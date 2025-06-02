@@ -1,11 +1,11 @@
+import { prisma } from "#database";
 import { logger } from "#settings";
 import { Colors } from "discord.js";
 import CreateChannelCategoryIfNotExistsService from "discord/services/create-categoria.service.js";
-import CreateRoleCapitaoIfNotExistsService from "discord/services/create-role-capitao.service.js";
+import CreatePlayerService from "discord/services/create-player.service.js";
 import CreateTeamService from "discord/services/create-team.service.js";
 import CreateVoiceChannelService from "discord/services/create-voice-channel.service.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
-import { modalidades } from "utils/modalidades.service.js";
 
 export default async function CriarTimeService(
   methods: ReturnType<typeof InteractionMethods>
@@ -37,22 +37,36 @@ export default async function CriarTimeService(
     throw new Error("Nome do time não informado.");
   }
 
-  const cargoTime = await CreateTeamService({ methods, teamName, teamColor });
+  const { teamRole, teamEntity } = await CreateTeamService({
+    methods,
+    teamName,
+    teamColor,
+  });
 
-  if (!cargoTime) {
+  if (!teamRole) {
     logger.error("Erro ao criar o cargo do time.");
     throw new Error("Houve um erro ao tentar criar o time!");
   }
 
+  const playerEntity = await CreatePlayerService({ methods });
+
+  console.log(
+    `Criando ou atualizando o jogador: ${playerEntity.name} (${playerEntity.memberId})`
+  );
+
   if (capitao) {
     try {
-      await capitao.roles.add(cargoTime);
+      await capitao.roles.add(teamRole);
       await capitao.roles.add(cargoCapitao);
-      const message = `Capitão ${capitao.displayName} adicionado ao cargo "${cargoTime.name}" e ao cargo de Capitão.`;
+      await prisma.player.update({
+        where: { id: playerEntity.id },
+        data: { teamId: teamEntity.id, isCaptain: true },
+      });
+      const message = `Capitão ${capitao.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
       await followUp(message);
       logger.log(message);
     } catch (error) {
-      const message = `Erro ao adicionar ${capitao.displayName} ao cargo ${cargoTime.name}: ${error}`;
+      const message = `Erro ao adicionar ${capitao.displayName} ao cargo ${teamRole.name}: ${error}`;
       logger.error(message);
       throw new Error(message);
     }
@@ -61,13 +75,16 @@ export default async function CriarTimeService(
   if (!capitao || member.id !== capitao.id) {
     try {
       await member.roles.add(cargoCapitao);
-      await member.roles.add(cargoTime);
-
-      const message = `Capitão ${member.displayName} adicionado ao cargo "${cargoTime.name}" e ao cargo de Capitão.`;
+      await member.roles.add(teamRole);
+      await prisma.player.update({
+        where: { id: playerEntity.id },
+        data: { teamId: teamEntity.id },
+      });
+      const message = `Capitão ${member.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
       await followUp(message);
       logger.log(message);
     } catch (error) {
-      const message = `Erro ao adicionar ${member.displayName} como capitão do time ${cargoTime.name}: ${error}`;
+      const message = `Erro ao adicionar ${member.displayName} como capitão do time ${teamRole.name}: ${error}`;
       logger.error(message);
       throw new Error(message);
     }
@@ -82,22 +99,22 @@ export default async function CriarTimeService(
     await CreateVoiceChannelService({
       methods,
       channelName: teamName,
-      role: cargoTime,
+      role: teamRole,
       channelCategory: categoria,
     });
     await followUp(
-      `O canal de voz para ${cargoTime.name} foi criado com sucesso!`
+      `O canal de voz para ${teamRole.name} foi criado com sucesso!`
     );
   } catch (err) {
-    if (cargoTime && findVoiceChannel(cargoTime.name)) {
-      await cargoTime.delete("Falha ao criar canal de voz associado.");
+    if (teamRole && findVoiceChannel(teamRole.name)) {
+      await teamRole.delete("Falha ao criar canal de voz associado.");
     }
 
     logger.error(
-      `Erro ao criar o canal de voz para o time ${cargoTime.name}: ${err}`
+      `Erro ao criar o canal de voz para o time ${teamRole.name}: ${err}`
     );
     throw new Error(
-      `Houve um erro ao criar o canal de voz para o time ${cargoTime.name}, contate um administrador.`
+      `Houve um erro ao criar o canal de voz para o time ${teamRole.name}, contate um administrador.`
     );
   }
 }

@@ -1,6 +1,7 @@
 import { Colors } from "discord.js";
 import { InteractionMethods } from "./interaction-methods.service.js";
 import { logger } from "#settings";
+import { prisma } from "#database";
 
 interface CreateTeamServiceParam {
   methods: ReturnType<typeof InteractionMethods>;
@@ -13,19 +14,46 @@ export default async function CreateTeamService({
   teamName,
   teamColor,
 }: CreateTeamServiceParam) {
-  const role = methods.findRoleByName(teamName);
+  logger.log(`Iniciando a criação do time: ${teamName}`);
+  const { findRoleByName, createRole } = methods;
+  const role = findRoleByName(teamName);
+
   if (role) {
-    const message = `Erro: Já existe um cargo com o nome "${teamName}".`;
+    const message = `O ${teamName} já existe. Por favor, escolha outro nome.`;
     logger.error(message);
     throw new Error(message);
   }
 
-  const cargoTime = await methods.createRole({
+  const teamRole = await createRole({
     name: teamName,
     color: teamColor,
     permissions: [],
     mentionable: true,
   });
 
-  return cargoTime;
+  if (!teamRole) {
+    logger.error(`Erro ao criar o cargo do time: ${teamName}`);
+    throw new Error(`Houve um erro ao tentar criar o time: ${teamName}`);
+  }
+
+  let teamEntity = await prisma.team.findUnique({
+    where: { name: teamName },
+  });
+
+  if (!teamEntity) {
+    try {
+      teamEntity = await prisma.team.create({
+        data: {
+          name: teamName,
+        },
+      });
+    } catch (error) {
+      logger.error(
+        `Erro ao criar a entidade do time no banco de dados: ${error}`
+      );
+      throw new Error(`Houve um erro ao tentar criar o time: ${teamName}`);
+    }
+  }
+
+  return { teamRole, teamEntity };
 }

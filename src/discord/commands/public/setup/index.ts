@@ -1,13 +1,16 @@
 import { createCommand } from "#base";
-import { ApplicationCommandType } from "discord.js";
+import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
 import SetupService from "./setup.service.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
 import { prisma } from "#database";
 
 createCommand({
   name: "setup",
-  description: "app command",
+  description:
+    "Esse comando cria os canais e cargos necessários para o funcionamento do bot.",
   type: ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
+
   async run(interaction) {
     const methods = InteractionMethods(interaction);
     await SetupService({ methods, db: prisma });

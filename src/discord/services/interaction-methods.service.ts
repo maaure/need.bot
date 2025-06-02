@@ -54,6 +54,10 @@ export function InteractionMethods(
     return await interaction.editReply({ content: message });
   }
 
+  async function reply(message: string) {
+    return await interaction.reply({ content: message, flags });
+  }
+
   function findChannelCategory(channelCategoryName: string) {
     return guild.channels.cache.find(
       (c) =>
@@ -123,6 +127,7 @@ export function InteractionMethods(
     deferReply,
     followUp,
     editReply,
+    reply,
     findChannelCategory,
     createInvisibleChannelCategory,
     findVoiceChannel,

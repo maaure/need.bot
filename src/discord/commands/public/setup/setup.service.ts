@@ -1,5 +1,7 @@
+import { prisma } from "#database";
 import { logger } from "#settings";
 import { PrismaClient } from "@prisma/client/extension";
+import { Role } from "discord.js";
 import CreateChannelCategoryIfNotExistsService from "discord/services/create-categoria.service.js";
 import CreateRoleCapitaoIfNotExistsService from "discord/services/create-role-capitao.service.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
@@ -10,46 +12,96 @@ interface SetupServiceParams {
   db: PrismaClient;
 }
 
-export default async function SetupService({
-  methods,
-  db,
-}: SetupServiceParams) {
+export default async function SetupService({ methods }: SetupServiceParams) {
+  await methods.deferReply();
   await CreateRoleCapitaoIfNotExistsService({ methods });
-  const categories: string[] = [];
+  const modalities: Array<Role> = [];
+  await methods.editReply(
+    "Iniciando a configuração do servidor. Isso pode levar alguns minutos."
+  );
+  logger.log("Iniciando a configuração do servidor.");
+  logger.log("Iniciando a criação dos papéis para as modalidades.");
 
-  /* Cria os papéis para as modalidades, ex: Valorant, League of Legends, Counter-Strike, etc... */
   (Object.keys(modalidades) as Array<keyof typeof modalidades>).map(
     async (key) => {
-      categories.push(`Time - ${key}`);
-      const role = await methods.createRoleIfNotExists({
-        name: key,
-        color: modalidades[key].cor,
-        permissions: [],
-        mentionable: true,
-      });
-
-      console.log(db);
-
       try {
-        const modalityEntry = await db.modality.upsert({
-          where: { name: role.name, roleId: role.id },
-          update: {},
-          create: { name: role.name, roleId: role.id },
+        const existingRole = methods.findRoleByName(key);
+        if (existingRole) {
+          logger.log(`Papel '${key}' já existe. Pulando criação.`);
+          modalities.push(existingRole);
+          return;
+        }
+
+        const role = await methods.createRoleIfNotExists({
+          name: key,
+          color: modalidades[key].cor,
+          permissions: [],
+          mentionable: true,
         });
-        logger.success(`Modality '${modalityEntry.name}' ensured in database.`);
-      } catch (dbError) {
-        logger.error(`Error ensuring modality '${key}' in database:`, dbError);
+        modalities.push(role);
+        logger.success(`Papel '${key}' criado com sucesso.`);
+      } catch (error) {
+        logger.error(`Error creating role '${key}':`, error);
+        throw new Error(
+          `Houve um erro ao tentar criar o cargo para a modalidade ${key}`
+        );
       }
     }
   );
-
   /* Cria as separações (categorias) dos canais de voz dos times */
-  for (const categoryName of categories) {
+  logger.log(
+    "Iniciando a criação das categorias para os canais de voz dos times."
+  );
+  for (const { name } of modalities) {
     try {
-      await CreateChannelCategoryIfNotExistsService({ methods, categoryName });
-      logger.success(`Category '${categoryName}' ensured.`);
+      await CreateChannelCategoryIfNotExistsService({
+        methods,
+        categoryName: `Times de ${name}`,
+      });
+      logger.success(`Category '${name}' ensured.`);
     } catch (categoryError) {
-      logger.error(`Error ensuring category '${categoryName}':`, categoryError);
+      logger.error(`Error ensuring category '${name}':`, categoryError);
     }
   }
+  logger.success(
+    "Categorias para os canais de voz dos times criadas com sucesso."
+  );
+
+  try {
+    logger.log(
+      "Iniciando a persistência/atualização das modalidades no banco de dados."
+    );
+
+    for (const role of modalities) {
+      try {
+        await prisma.modality.upsert({
+          where: { name: role.name },
+          update: { roleId: role.id },
+          create: {
+            name: role.name,
+            roleId: role.id,
+          },
+        });
+        logger.success(
+          `Modalidade '${role.name}' (Role ID: ${role.id}) persistida/atualizada no banco de dados.`
+        );
+      } catch (dbProcessingError) {
+        logger.error(
+          `Erro ao processar a modalidade '${role.name}' no banco de dados:`,
+          dbProcessingError
+        );
+      }
+    }
+    logger.success(
+      "Modalidades persistidas/atualizadas no banco de dados com sucesso."
+    );
+  } catch (err) {
+    const message = `Erro geral durante a persistência/atualização das modalidades.`;
+    logger.error(message, err);
+    throw new Error(message);
+  }
+  await methods.editReply(
+    "Configuração concluída com sucesso! As modalidades e categorias foram criadas."
+  );
+  logger.success("Configuração concluída com sucesso!");
 }

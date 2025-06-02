@@ -1,27 +1,30 @@
 import { prisma } from "#database";
 import { logger } from "#settings";
+import { GuildMember } from "discord.js";
 import { InteractionMethods } from "./interaction-methods.service.js";
 
 interface CreateMemberServiceParams {
   methods: ReturnType<typeof InteractionMethods>;
+  player?: GuildMember;
 }
 
 export default async function CreateMemberService({
   methods,
+  player,
 }: CreateMemberServiceParams) {
-  const { member } = methods;
+  const member = methods.member ?? player;
 
   logger.log(`Iniciando a criação do membro: ${member.displayName}`);
 
   try {
     const playerEntity = await prisma.player.upsert({
-      where: { memberId: member.id },
+      where: { guildMemberId: member.id },
       update: {
         name: member.displayName,
       },
       create: {
         name: member.displayName,
-        memberId: member.id,
+        guildMemberId: member.id,
       },
     });
     logger.success(

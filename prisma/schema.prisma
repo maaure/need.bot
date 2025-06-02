@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,19 +8,16 @@ datasource db {
 }
 
 model Player {
-  id        String  @id @default(uuid())
-  name      String
-  isCaptain Boolean @default(false)
-  memberId  String  @unique
+  id            String @id @default(uuid())
+  name          String
+  guildMemberId String @unique /// identifica qual usuário do discord é o jogador
 
-  teamId String?
-  team   Team?   @relation("TeamPlayers", fields: [teamId], references: [id])
+  teams TeamParticipation[]
 
-  captainOf Team? @relation("TeamCaptain")
+  captainOf Team[] @relation("TeamCaptain")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Team      Team?    @relation(fields: [teamId], references: [id])
 }
 
 model Modality {
@@ -29,7 +25,7 @@ model Modality {
   name String @unique
 
   teams  Team[]
-  roleId String @unique
+  roleId String @unique // Indica qual cargo do servidor do discord é o responsável por essa modalidade
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,9 +35,9 @@ model Team {
   id   String @id @default(uuid())
   name String @unique
 
-  members Player[] @relation("TeamPlayers")
+  players TeamParticipation[]
 
-  captainId String? @unique
+  captainId String?
   captain   Player? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   modalityId String?
@@ -49,12 +45,17 @@ model Team {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Player    Player[]
 }
 
-model TestEntity {
-  id        String   @id @default(uuid())
-  name      String
-  value     Int
-  createdAt DateTime @default(now())
+model TeamParticipation {
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId String
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+
+  assignedAt DateTime @default(now())
+
+  @@id([playerId, teamId])
+  @@map("player_team_memberships")
 }

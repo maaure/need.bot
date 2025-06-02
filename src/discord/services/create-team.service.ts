@@ -19,7 +19,7 @@ export default async function CreateTeamService({
   const role = findRoleByName(teamName);
 
   if (role) {
-    const message = `O ${teamName} já existe. Por favor, escolha outro nome.`;
+    const message = `O time ${teamName} já existe. Por favor, escolha outro nome.`;
     logger.error(message);
     throw new Error(message);
   }

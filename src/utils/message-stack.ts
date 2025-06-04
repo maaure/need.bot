@@ -1,33 +1,33 @@
 import { brBuilder } from "@magicyan/discord";
-import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
+import { ChatInputCommandInteraction } from "discord.js";
 
 class MessageStack {
   private _messages: string[] = [];
   private messageBody: string = "";
-  private methods: InteractionMethodsType;
+  private methods: ChatInputCommandInteraction<"cached">;
 
-  constructor(methods: InteractionMethodsType) {
+  constructor(methods: ChatInputCommandInteraction<"cached">) {
     this.methods = methods;
   }
 
-  private _triggerUpdate(): void {
+  private async _triggerUpdate() {
     this.messageBody = brBuilder(this._messages);
-    this.methods.editReply(this.messageBody);
+    await this.methods.editReply(this.messageBody);
   }
 
-  push(message: string): void {
+  async push(message: string) {
     this._messages.push(message);
-    this._triggerUpdate();
+    await this._triggerUpdate();
   }
 
-  set(messages: string[]): void {
+  async set(messages: string[]) {
     this._messages = [...messages];
-    this._triggerUpdate();
+    await this._triggerUpdate();
   }
 
-  clear(): void {
+  async clear() {
     this._messages = [];
-    this._triggerUpdate();
+    await this._triggerUpdate();
   }
 
   getMessages(): string[] {

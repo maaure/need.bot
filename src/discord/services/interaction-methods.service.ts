@@ -1,4 +1,4 @@
-import { findRole } from "@magicyan/discord";
+import { findMember, findRole } from "@magicyan/discord";
 import {
   CategoryChannel,
   ChannelType,
@@ -7,6 +7,7 @@ import {
   Role,
   RoleCreateOptions,
 } from "discord.js";
+import MessageStack from "utils/message-stack.js";
 
 export type InteractionMethodsType = ReturnType<typeof InteractionMethods>;
 
@@ -14,6 +15,7 @@ export function InteractionMethods(
   interaction: ChatInputCommandInteraction<"cached">
 ) {
   const { guild, member, options } = interaction;
+  const messageStack = new MessageStack(interaction);
   function getString(name: string, required?: boolean) {
     return options.getString(name, required) ?? undefined;
   }
@@ -29,6 +31,10 @@ export function InteractionMethods(
   function findRoleByName(roleName?: string) {
     if (!roleName) return;
     return findRole(guild).byName(roleName);
+  }
+  function findRoleById(id?: string) {
+    if (!id) return;
+    return findRole(guild).byId(id);
   }
 
   async function createRoleIfNotExists(opts: RoleCreateOptions) {
@@ -119,6 +125,10 @@ export function InteractionMethods(
     });
   }
 
+  function findMemberById(id: string) {
+    return findMember(guild).byId(id);
+  }
+
   return {
     getString,
     getMember,
@@ -136,5 +146,8 @@ export function InteractionMethods(
     createPrivateVoiceChannel,
     guild,
     member,
+    messageStack,
+    findMemberById,
+    findRoleById,
   };
 }

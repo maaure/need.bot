@@ -3,35 +3,36 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
-import AdicionarJogadorService from "./adicionar-jogador.service.js";
-import AutocompleteTeamService from "./autocomplete-time.service.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import DefinirCapitaoService from "./definir-capitao.service.js";
+import AutocompleteTeamService from "../adicionar-jogador/autocomplete-time.service.js";
 
 createCommand({
-  name: "adicionar-jogador",
-  description: "Adicione um jogador a algum time",
-  type: ApplicationCommandType.ChatInput,
+  name: "definir-capitao",
+  description: "Mencione o player para definir como capitão do time.",
   options: [
     {
       name: "time",
-      description: "O time que você quer adicionar o jogador.",
+      description: "O time que você quer definir o capitão.",
       type: ApplicationCommandOptionType.String,
-      required: true,
+      required,
       autocomplete: true,
     },
     {
       name: "jogador",
-      description: "Marque o jogador que você quer adicionar ao seu time.",
+      description: "Marque o jogador que você quer definir como capitão.",
       type: ApplicationCommandOptionType.User,
-      required: true,
+      required,
     },
   ],
+  type: ApplicationCommandType.ChatInput,
   async autocomplete(interaction) {
     return await AutocompleteTeamService(interaction);
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);
     await methods.deferReply();
-    await AdicionarJogadorService(methods);
+    await DefinirCapitaoService(methods);
+    // Implementar a lógica para definir o capitão do time
   },
 });

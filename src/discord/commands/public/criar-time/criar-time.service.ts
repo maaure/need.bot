@@ -10,8 +10,13 @@ import { InteractionMethodsType } from "discord/services/interaction-methods.ser
 export default async function CriarTimeService(
   methods: InteractionMethodsType
 ) {
-  const { getString, getMember, followUp, findVoiceChannel, findRoleByName } =
-    methods;
+  const {
+    getString,
+    getMember,
+    findVoiceChannel,
+    findRoleByName,
+    messageStack,
+  } = methods;
 
   logger.log(`Começando interação para criar time.`);
   const cargoCapitao = findRoleByName("Capitão");
@@ -64,6 +69,8 @@ export default async function CriarTimeService(
       where: { name: modalidade },
     });
 
+    logger.warn(modalidade, modalityEntity);
+
     if (!modalityEntity) {
       throw new Error(`Modalidade "${modalidade}" não encontrada.`);
     }
@@ -93,7 +100,7 @@ export default async function CriarTimeService(
     await capitao.roles.add(cargoCapitao);
 
     const message = `Capitão ${capitao.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
-    await followUp(message);
+    await messageStack.push(message);
     logger.log(message);
   } catch (error) {
     const message = `Erro ao adicionar ${capitao.displayName} ao cargo ${teamRole.name}.`;
@@ -113,7 +120,7 @@ export default async function CriarTimeService(
       role: teamRole,
       channelCategory: categoria,
     });
-    await followUp(
+    messageStack.push(
       `O canal de voz para ${teamRole.name} foi criado com sucesso!`
     );
   } catch (err) {
@@ -128,4 +135,6 @@ export default async function CriarTimeService(
       `Houve um erro ao criar o canal de voz para o time ${teamRole.name}, contate um administrador.`
     );
   }
+
+  await messageStack.push("Time criado com sucesso! 🎉");
 }

@@ -1,8 +1,8 @@
 import { createCommand } from "#base";
 import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
 import SetupService from "./setup.service.js";
-import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 import { prisma } from "#database";
+import { InteractionMethods } from "discord/services/interaction-methods.service.js";
 
 createCommand({
   name: "setup",

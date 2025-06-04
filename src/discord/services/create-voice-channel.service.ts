@@ -1,8 +1,8 @@
-import { InteractionMethods } from "./interaction-methods.service.js";
+import { InteractionMethodsType } from "./interaction-methods.service.js";
 import { CategoryChannel, Role } from "discord.js";
 
 interface CreateVoiceChannelServiceParams {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
   channelName: string;
   channelCategory: CategoryChannel;
   role: Role;

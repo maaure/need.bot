@@ -1,10 +1,10 @@
 import { Colors } from "discord.js";
-import { InteractionMethods } from "./interaction-methods.service.js";
+import { InteractionMethodsType } from "./interaction-methods.service.js";
 import { logger } from "#settings";
 import { prisma } from "#database";
 
 interface CreateTeamServiceParam {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
   teamName: string;
   teamColor: keyof typeof Colors;
 }

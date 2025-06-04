@@ -1,9 +1,9 @@
 import { Colors } from "discord.js";
-import { InteractionMethods } from "./interaction-methods.service.js";
+import { InteractionMethodsType } from "./interaction-methods.service.js";
 import { logger } from "#settings";
 
 interface CreateRoleCapitaoIfNotExistsServiceParams {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
 }
 
 export default async function CreateRoleCapitaoIfNotExistsService({

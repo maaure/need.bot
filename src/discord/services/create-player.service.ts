@@ -1,10 +1,10 @@
 import { prisma } from "#database";
 import { logger } from "#settings";
 import { GuildMember } from "discord.js";
-import { InteractionMethods } from "./interaction-methods.service.js";
+import { InteractionMethodsType } from "./interaction-methods.service.js";
 
 interface CreateMemberServiceParams {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
   player?: GuildMember;
 }
 

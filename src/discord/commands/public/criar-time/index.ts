@@ -6,7 +6,10 @@ import {
 import getColors from "utils/getColors.js";
 import getModalidadesChoices from "utils/modalidades.service.js";
 import CriarTimeService from "./criar-time.service.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import {
+  InteractionMethods,
+  InteractionMethodsType,
+} from "discord/services/interaction-methods.service.js";
 
 createCommand({
   name: "criar-time",

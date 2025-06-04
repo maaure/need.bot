@@ -1,12 +1,12 @@
 import { prisma } from "#database";
 import { logger } from "#settings";
 import { findRole } from "@magicyan/discord";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 // Se 'player' for um tipo específico como GuildMember do discord.js, você pode querer importá-lo para melhor type-safety
 // import { GuildMember } from "discord.js";
 
 export default async function AdicionarJogadorService(
-  methods: ReturnType<typeof InteractionMethods>
+  methods: InteractionMethodsType
 ) {
   const teamName = methods.getString("time");
   const player = methods.getMember("jogador");

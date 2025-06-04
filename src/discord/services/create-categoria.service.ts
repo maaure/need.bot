@@ -1,8 +1,8 @@
 import { logger } from "#settings";
-import { InteractionMethods } from "./interaction-methods.service.js";
+import { InteractionMethodsType } from "./interaction-methods.service.js";
 
 interface CreateChannelCategoryIfNotExistsServiceParams {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
   categoryName: string;
 }
 

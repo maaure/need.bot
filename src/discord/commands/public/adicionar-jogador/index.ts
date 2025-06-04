@@ -4,7 +4,7 @@ import {
   ApplicationCommandType,
   PermissionsBitField,
 } from "discord.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 import AdicionarJogadorService from "./adicionar-jogador.service.js";
 import { prisma } from "#database";
 import { logger } from "#settings";

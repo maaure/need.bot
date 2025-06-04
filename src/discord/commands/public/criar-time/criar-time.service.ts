@@ -5,10 +5,10 @@ import CreateChannelCategoryIfNotExistsService from "discord/services/create-cat
 import CreatePlayerService from "discord/services/create-player.service.js";
 import CreateTeamService from "discord/services/create-team.service.js";
 import CreateVoiceChannelService from "discord/services/create-voice-channel.service.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 
 export default async function CriarTimeService(
-  methods: ReturnType<typeof InteractionMethods>
+  methods: InteractionMethodsType
 ) {
   const { getString, getMember, followUp, findVoiceChannel, findRoleByName } =
     methods;
@@ -26,12 +26,28 @@ export default async function CriarTimeService(
   const modalidade = getString("modalidade");
   const teamColor = getString("cor") as keyof typeof Colors;
 
-  const playerEntity = await CreatePlayerService({ methods });
-
   if (!teamName) {
     logger.error("Nome do time não informado.");
     throw new Error("Nome do time não informado.");
   }
+
+  if (!capitao) {
+    logger.error("Nenhum capitão foi selecionado.");
+    throw new Error("Nenhum capitão foi selecionado.");
+  }
+
+  if (!modalidade) {
+    logger.error("Modalidade não informada.");
+    throw new Error("Modalidade não informada.");
+  }
+
+  if (!teamColor) {
+    logger.error("Cor do time não informada.");
+    throw new Error("Cor do time não informada.");
+  }
+
+  /* Criação das entidades básicas */
+  const playerEntity = await CreatePlayerService({ methods });
 
   const { teamRole, teamEntity } = await CreateTeamService({
     methods,
@@ -39,54 +55,49 @@ export default async function CriarTimeService(
     teamColor,
   });
 
-  console.log(
+  logger.info(
     `Criando ou atualizando o jogador: ${playerEntity.name} (${playerEntity.guildMemberId})`
   );
 
-  if (capitao) {
+  try {
+    const modalityEntity = await prisma.modality.findUnique({
+      where: { name: modalidade },
+    });
+
+    if (!modalityEntity) {
+      throw new Error(`Modalidade "${modalidade}" não encontrada.`);
+    }
+
+    await prisma.$transaction([
+      prisma.teamParticipation.create({
+        data: {
+          playerId: playerEntity.id,
+          teamId: teamEntity.id,
+        },
+      }),
+      prisma.team.update({
+        where: { id: teamEntity.id },
+        data: { captainId: playerEntity.id, modalityId: modalityEntity.id },
+      }),
+      prisma.modality.update({
+        where: { id: modalityEntity.id },
+        data: {
+          teams: {
+            connect: { id: teamEntity.id },
+          },
+        },
+      }),
+    ]);
+
     await capitao.roles.add(teamRole);
     await capitao.roles.add(cargoCapitao);
-    try {
-      const modalityEntity = await prisma.modality.findUnique({
-        where: { name: modalidade },
-      });
 
-      if (!modalityEntity) {
-        throw new Error(`Modalidade "${modalidade}" não encontrada.`);
-      }
-
-      await prisma.$transaction([
-        prisma.teamParticipation.create({
-          data: {
-            playerId: playerEntity.id,
-            teamId: teamEntity.id,
-          },
-        }),
-        prisma.team.update({
-          where: { id: teamEntity.id },
-          data: { captainId: playerEntity.id, modalityId: modalityEntity.id },
-        }),
-        prisma.modality.update({
-          where: { id: modalityEntity.id },
-          data: {
-            teams: {
-              connect: { id: teamEntity.id },
-            },
-          },
-        }),
-      ]);
-
-      const message = `Capitão ${capitao.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
-      await followUp(message);
-      logger.log(message);
-    } catch (error) {
-      const message = `Erro ao adicionar ${capitao.displayName} ao cargo ${teamRole.name}.`;
-      logger.error(message, error);
-      throw new Error(message);
-    }
-  } else {
-    const message = "Nenhum capitão foi selecionado.";
-    logger.error(message);
+    const message = `Capitão ${capitao.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
+    await followUp(message);
+    logger.log(message);
+  } catch (error) {
+    const message = `Erro ao adicionar ${capitao.displayName} ao cargo ${teamRole.name}.`;
+    logger.error(message, error);
     throw new Error(message);
   }
 

@@ -8,6 +8,8 @@ import {
   RoleCreateOptions,
 } from "discord.js";
 
+export type InteractionMethodsType = ReturnType<typeof InteractionMethods>;
+
 export function InteractionMethods(
   interaction: ChatInputCommandInteraction<"cached">
 ) {

@@ -4,11 +4,11 @@ import { PrismaClient } from "@prisma/client/extension";
 import { Role } from "discord.js";
 import CreateChannelCategoryIfNotExistsService from "discord/services/create-categoria.service.js";
 import CreateRoleCapitaoIfNotExistsService from "discord/services/create-role-capitao.service.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 import { modalidades } from "utils/modalidades.service.js";
 
 interface SetupServiceParams {
-  methods: ReturnType<typeof InteractionMethods>;
+  methods: InteractionMethodsType;
   db: PrismaClient;
 }
 

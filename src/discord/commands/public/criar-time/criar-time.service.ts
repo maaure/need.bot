@@ -47,6 +47,14 @@ export default async function CriarTimeService(
     await capitao.roles.add(teamRole);
     await capitao.roles.add(cargoCapitao);
     try {
+      const modalityEntity = await prisma.modality.findUnique({
+        where: { name: modalidade },
+      });
+
+      if (!modalityEntity) {
+        throw new Error(`Modalidade "${modalidade}" não encontrada.`);
+      }
+
       await prisma.$transaction([
         prisma.teamParticipation.create({
           data: {
@@ -56,7 +64,15 @@ export default async function CriarTimeService(
         }),
         prisma.team.update({
           where: { id: teamEntity.id },
-          data: { captainId: playerEntity.id },
+          data: { captainId: playerEntity.id, modalityId: modalityEntity.id },
+        }),
+        prisma.modality.update({
+          where: { id: modalityEntity.id },
+          data: {
+            teams: {
+              connect: { id: teamEntity.id },
+            },
+          },
         }),
       ]);
 

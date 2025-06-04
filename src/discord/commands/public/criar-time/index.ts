@@ -29,7 +29,7 @@ createCommand({
     {
       name: "capitao",
       description:
-        "MEncione quem será o capitão do seu time, se não informado, você será cadastrado como capitão",
+        "Mencione quem será o capitão do seu time, se não informado, você será cadastrado como capitão",
       type: ApplicationCommandOptionType.User,
       required: true,
     },
@@ -38,6 +38,7 @@ createCommand({
       description: "Escolha a cor do cargo do seu time",
       type: ApplicationCommandOptionType.String,
       autocomplete,
+      required: true,
     },
   ],
   async autocomplete(interaction) {

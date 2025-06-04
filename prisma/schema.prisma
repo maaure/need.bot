@@ -43,6 +43,8 @@ model Team {
   modalityId String?
   modality   Modality? @relation(fields: [modalityId], references: [id])
 
+  roleId String @unique // Indica qual cargo do servidor do discord é o responsável por essa modalidade
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

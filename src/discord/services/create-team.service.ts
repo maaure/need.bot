@@ -45,6 +45,7 @@ export default async function CreateTeamService({
       teamEntity = await prisma.team.create({
         data: {
           name: teamName,
+          roleId: teamRole.id,
         },
       });
     } catch (error) {

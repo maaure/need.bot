@@ -10,14 +10,8 @@ import { InteractionMethods } from "discord/services/interaction-methods.service
 export default async function CriarTimeService(
   methods: ReturnType<typeof InteractionMethods>
 ) {
-  const {
-    getString,
-    getMember,
-    followUp,
-    findVoiceChannel,
-    member,
-    findRoleByName,
-  } = methods;
+  const { getString, getMember, followUp, findVoiceChannel, findRoleByName } =
+    methods;
 
   logger.log(`Começando interação para criar time.`);
   const cargoCapitao = findRoleByName("Capitão");
@@ -45,36 +39,26 @@ export default async function CriarTimeService(
     teamColor,
   });
 
-  if (!teamRole) {
-    logger.error("Erro ao criar o cargo do time.");
-    throw new Error("Houve um erro ao tentar criar o time!");
-  }
-
   console.log(
     `Criando ou atualizando o jogador: ${playerEntity.name} (${playerEntity.guildMemberId})`
   );
 
   if (capitao) {
+    await capitao.roles.add(teamRole);
+    await capitao.roles.add(cargoCapitao);
     try {
-      await capitao.roles.add(teamRole);
-      await capitao.roles.add(cargoCapitao);
-
-      const captainEntity = await CreatePlayerService({
-        methods,
-        player: capitao,
-      });
-
-      await prisma.teamParticipation.create({
-        data: {
-          playerId: playerEntity.id,
-          teamId: teamEntity.id,
-        },
-      });
-
-      await prisma.team.update({
-        where: { id: teamEntity.id },
-        data: { captainId: captainEntity.id },
-      });
+      await prisma.$transaction([
+        prisma.teamParticipation.create({
+          data: {
+            playerId: playerEntity.id,
+            teamId: teamEntity.id,
+          },
+        }),
+        prisma.team.update({
+          where: { id: teamEntity.id },
+          data: { captainId: playerEntity.id },
+        }),
+      ]);
 
       const message = `Capitão ${capitao.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
       await followUp(message);
@@ -85,33 +69,9 @@ export default async function CriarTimeService(
       throw new Error(message);
     }
   } else {
-    logger.log(
-      `Capitão não especificado ou não é o membro atual. Adicionando o membro atual como capitão.`
-    );
-    try {
-      await member.roles.add(cargoCapitao);
-      await member.roles.add(teamRole);
-
-      await prisma.teamParticipation.create({
-        data: {
-          playerId: playerEntity.id,
-          teamId: teamEntity.id,
-        },
-      });
-
-      await prisma.team.update({
-        where: { id: teamEntity.id },
-        data: { captainId: playerEntity.id },
-      });
-
-      const message = `Capitão ${member.displayName} adicionado ao cargo "${teamRole.name}" e ao cargo de Capitão.`;
-      await followUp(message);
-      logger.log(message);
-    } catch (error) {
-      const message = `Erro ao adicionar ${member.displayName} como capitão do time ${teamRole.name}: ${error}`;
-      logger.error(message);
-      throw new Error(message);
-    }
+    const message = "Nenhum capitão foi selecionado.";
+    logger.error(message);
+    throw new Error(message);
   }
 
   const categoria = await CreateChannelCategoryIfNotExistsService({

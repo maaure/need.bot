@@ -2,6 +2,7 @@ import { prisma } from "#database";
 import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
 import type { PrismaClient } from "@prisma/client";
+import { GuildMember } from "discord.js";
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -74,18 +75,28 @@ async function manageCaptainRole(
   }
 }
 
-export default async function SairTimeService(methods: InteractionMethodsType) {
+interface RemoverJogadorServiceParams {
+  methods: InteractionMethodsType;
+  player: GuildMember;
+}
+
+export default async function RemoverJogadorTimeService({
+  methods,
+  player,
+}: RemoverJogadorServiceParams) {
   await methods.deferReply();
 
   const teamNameOption = methods.getString("time", required);
-  const leavingGuildMember = methods.member;
+  const leavingGuildMember = player;
 
   const leavingPlayerEntity = await prisma.player.findUnique({
     where: { guildMemberId: leavingGuildMember.id },
   });
 
   if (!leavingPlayerEntity) {
-    throw new Error("Você não está registrado como jogador no bot.");
+    throw new Error(
+      `${leavingGuildMember.displayName} não está registrado como jogador no bot como jogador.`
+    );
   }
 
   const teamEntity = await prisma.team.findUnique({
@@ -112,7 +123,9 @@ export default async function SairTimeService(methods: InteractionMethodsType) {
   });
 
   if (!participation) {
-    throw new Error(`Você não é membro do time "${teamEntity.name}".`);
+    throw new Error(
+      `${leavingGuildMember.displayName} não é membro do time "${teamEntity.name}".`
+    );
   }
 
   try {
@@ -136,7 +149,7 @@ export default async function SairTimeService(methods: InteractionMethodsType) {
         try {
           await leavingGuildMember.roles.remove(teamDiscordRole);
           methods.messageStack.push(
-            `✅ Você não faz mais parte do time ${teamEntity.name} (cargo removido).`
+            `✅ ${leavingGuildMember.displayName} não faz mais parte do time ${teamEntity.name} (cargo removido).`
           );
           logger.info(
             `Cargo ${teamDiscordRole.name} removido do jogador ${leavingGuildMember.displayName}.`
@@ -170,7 +183,7 @@ export default async function SairTimeService(methods: InteractionMethodsType) {
       if (remainingParticipations.length === 0) {
         // Team is now empty
         methods.messageStack.push(
-          `ℹ️ Você era o último membro do time ${teamEntity.name}. O time será desfeito.`
+          `ℹ️ ${leavingGuildMember.displayName} era o último membro do time ${teamEntity.name}. O time será desfeito.`
         );
         logger.info(
           `Time ${teamEntity.name} ficou vazio após saída de ${leavingPlayerEntity.name}. Iniciando processo de exclusão do time.`
@@ -237,7 +250,7 @@ export default async function SairTimeService(methods: InteractionMethodsType) {
         // Team still has members
         if (wasCaptain) {
           methods.messageStack.push(
-            `ℹ️ Você era o capitão do time ${teamEntity.name}. Um novo capitão será escolhido.`
+            `ℹ️ ${leavingGuildMember.displayName} era o capitão do time ${teamEntity.name}. Um novo capitão será escolhido.`
           );
           logger.info(
             `Capitão ${leavingPlayerEntity.name} saiu do time ${teamEntity.name}. Escolhendo novo capitão.`

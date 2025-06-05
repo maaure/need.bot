@@ -2,9 +2,15 @@ import { prisma } from "#database";
 import { logger } from "#settings";
 import { AutocompleteInteraction } from "discord.js";
 
-export default async function AutocompleteMemberTeam(
-  interaction: AutocompleteInteraction<"cached">
-) {
+interface AutocompleteMemberTeamParams {
+  interaction: AutocompleteInteraction<"cached">;
+  listAll?: boolean;
+}
+
+export default async function AutocompleteMemberTeam({
+  interaction,
+  listAll = false,
+}: AutocompleteMemberTeamParams) {
   const focusedValue = interaction.options.getFocused().trim().toLowerCase();
   const memberId = interaction.member.id;
 
@@ -13,17 +19,20 @@ export default async function AutocompleteMemberTeam(
       where: { guildMemberId: memberId },
     });
 
-    if (!player) {
+    if (!player && !listAll) {
       return [];
     }
 
     const teamsParticipating = await prisma.team.findMany({
       where: {
-        players: {
-          some: {
-            playerId: player.id,
-          },
-        },
+        ...(!listAll &&
+          player && {
+            players: {
+              some: {
+                playerId: player.id,
+              },
+            },
+          }),
         ...(focusedValue && {
           name: {
             contains: focusedValue,

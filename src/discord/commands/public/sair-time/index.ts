@@ -4,7 +4,7 @@ import {
   ApplicationCommandType,
 } from "discord.js";
 import { InteractionMethods } from "discord/services/interaction-methods.service.js";
-import SairTimeService from "./sair-time.service.js";
+import RemoverJogadorTimeService from "../../../services/remover-jogador-time.service.js";
 import AutocompleteMemberTeam from "discord/services/autocomplete-team-sair.service.js";
 
 createCommand({
@@ -21,11 +21,10 @@ createCommand({
     },
   ],
   async autocomplete(interaction) {
-    return await AutocompleteMemberTeam(interaction);
+    return await AutocompleteMemberTeam({ interaction });
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);
-    // deferReply is called within SairTimeService
-    await SairTimeService(methods);
+    await RemoverJogadorTimeService({ methods, player: methods.member });
   },
 });

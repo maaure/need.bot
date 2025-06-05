@@ -27,7 +27,7 @@ createCommand({
     },
   ],
   async autocomplete(interaction) {
-    return await AutocompleteMemberTeam(interaction);
+    return await AutocompleteMemberTeam({ interaction });
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);

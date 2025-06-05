@@ -3,10 +3,8 @@ import { InteractionMethodsType } from "#services/interaction-methods.service.js
 export default async function ApagarTimeService(
   methods: InteractionMethodsType
 ) {
-  const { getRole, findVoiceChannel, followUp, editReply, deferReply } =
-    methods;
+  const { getRole, findVoiceChannel, followUp, editReply } = methods;
 
-  await deferReply();
   const teamRole = getRole("time");
 
   if (teamRole) {

@@ -2,6 +2,7 @@ import { prisma } from "#database";
 import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
 import { findRole } from "@magicyan/discord";
+import { PermissionFlagsBits } from "discord.js";
 
 export default async function AdicionarJogadorService(
   methods: InteractionMethodsType
@@ -23,13 +24,46 @@ export default async function AdicionarJogadorService(
 
   const teamEntity = await prisma.team.findUnique({
     where: { name: teamName },
+    include: {
+      players: true,
+    },
   });
+
+  console.log(teamEntity);
 
   if (!teamEntity) {
     const message = `O time "${teamName}" não existe.`;
     logger.error(message);
     throw new Error(message);
   }
+
+  if (!methods.member.permissions.has(PermissionFlagsBits.Administrator)) {
+    const existingPlayer = await prisma.player.findUnique({
+      where: { guildMemberId: methods.member.id },
+    });
+
+    if (!existingPlayer)
+      throw new Error(
+        "Houve um erro inesperado durante o cadastro do novo membro."
+      );
+
+    const participation = await prisma.teamParticipation.findUnique({
+      where: {
+        playerId_teamId: {
+          playerId: existingPlayer.id,
+          teamId: teamEntity.id,
+        },
+      },
+    });
+
+    if (!participation)
+      throw new Error(
+        "Você não pode adicionar um jogador a um time que você não faz parte."
+      );
+  } else {
+    logger.success("Adminstrador adicionando player ao time");
+  }
+
   const teamRole = findRole(methods.guild).byId(teamEntity.roleId);
 
   if (!teamRole) {

@@ -31,6 +31,7 @@ export default async function CriarTimeService(
   const modalidade = getString("modalidade");
   const teamColor = getString("cor") as keyof typeof Colors;
 
+  console.log(teamName, typeof teamName);
   if (!teamName) {
     logger.error("Nome do time não informado.");
     throw new Error("Nome do time não informado.");

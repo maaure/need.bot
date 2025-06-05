@@ -2,7 +2,6 @@ import { prisma } from "#database";
 import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
 import type { PrismaClient } from "@prisma/client";
-import { GuildMember } from "discord.js";
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -75,19 +74,11 @@ async function manageCaptainRole(
   }
 }
 
-interface RemoverJogadorServiceParams {
-  methods: InteractionMethodsType;
-  player: GuildMember;
-}
-
-export default async function RemoverJogadorTimeService({
-  methods,
-  player,
-}: RemoverJogadorServiceParams) {
-  await methods.deferReply();
-
+export default async function RemoverJogadorTimeService(
+  methods: InteractionMethodsType
+) {
   const teamNameOption = methods.getString("time", required);
-  const leavingGuildMember = player;
+  const leavingGuildMember = methods.getMember("jogador") ?? methods.member;
 
   const leavingPlayerEntity = await prisma.player.findUnique({
     where: { guildMemberId: leavingGuildMember.id },

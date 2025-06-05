@@ -52,7 +52,7 @@ export default async function CriarTimeService(
   }
 
   /* Criação das entidades básicas */
-  const playerEntity = await CreateMemberService({ methods });
+  const playerEntity = await CreateMemberService({ methods, player: capitao });
 
   const { teamRole, teamEntity } = await CreateTeamService({
     methods,

@@ -13,8 +13,6 @@ export default async function AutocompleteMemberTeam(
       where: { guildMemberId: memberId },
     });
 
-    console.log("Fui encontrado como jogador? ", player);
-
     if (!player) {
       return [];
     }

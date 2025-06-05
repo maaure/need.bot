@@ -12,7 +12,7 @@ export default async function CreateMemberService({
   methods,
   player,
 }: CreateMemberServiceParams) {
-  const member = methods.member ?? player;
+  const member = player ?? methods.member;
 
   logger.log(`Iniciando a criação do membro: ${member.displayName}`);
 

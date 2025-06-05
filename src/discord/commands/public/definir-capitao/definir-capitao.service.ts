@@ -1,6 +1,6 @@
 import { prisma } from "#database";
+import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
-import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 
 function handleErrorAndThrow(
   message: string,

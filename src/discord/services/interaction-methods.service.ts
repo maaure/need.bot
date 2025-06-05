@@ -7,7 +7,7 @@ import {
   Role,
   RoleCreateOptions,
 } from "discord.js";
-import MessageStack from "utils/message-stack.js";
+import MessageStack from "../../utils/message-stack.js";
 
 export type InteractionMethodsType = ReturnType<typeof InteractionMethods>;
 

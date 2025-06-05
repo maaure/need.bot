@@ -4,7 +4,7 @@ import {
   ApplicationCommandType,
 } from "discord.js";
 import ApagarTimeService from "./apagar-time.service.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethods } from "#services/interaction-methods.service.js";
 
 createCommand({
   name: "apagar-time",

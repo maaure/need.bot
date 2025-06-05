@@ -1,8 +1,7 @@
 import { createCommand } from "#base";
 import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
 import SetupService from "./setup.service.js";
-import { prisma } from "#database";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import { InteractionMethods } from "#services/interaction-methods.service.js";
 
 createCommand({
   name: "setup",
@@ -13,6 +12,6 @@ createCommand({
 
   async run(interaction) {
     const methods = InteractionMethods(interaction);
-    await SetupService({ methods, db: prisma });
+    await SetupService({ methods });
   },
 });

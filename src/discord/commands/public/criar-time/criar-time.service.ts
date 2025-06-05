@@ -1,11 +1,11 @@
 import { prisma } from "#database";
+import CreateChannelCategoryIfNotExistsService from "#services/create-categoria.service.js";
+import CreateMemberService from "#services/create-member.service.js";
+import CreateTeamService from "#services/create-team.service.js";
+import CreateVoiceChannelService from "#services/create-voice-channel.service.js";
+import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
 import { Colors } from "discord.js";
-import CreateChannelCategoryIfNotExistsService from "discord/services/create-categoria.service.js";
-import CreatePlayerService from "discord/services/create-player.service.js";
-import CreateTeamService from "discord/services/create-team.service.js";
-import CreateVoiceChannelService from "discord/services/create-voice-channel.service.js";
-import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
 
 export default async function CriarTimeService(
   methods: InteractionMethodsType
@@ -52,7 +52,7 @@ export default async function CriarTimeService(
   }
 
   /* Criação das entidades básicas */
-  const playerEntity = await CreatePlayerService({ methods });
+  const playerEntity = await CreateMemberService({ methods });
 
   const { teamRole, teamEntity } = await CreateTeamService({
     methods,

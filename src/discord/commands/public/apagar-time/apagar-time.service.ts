@@ -1,4 +1,4 @@
-import { InteractionMethodsType } from "discord/services/interaction-methods.service.js";
+import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 
 export default async function ApagarTimeService(
   methods: InteractionMethodsType

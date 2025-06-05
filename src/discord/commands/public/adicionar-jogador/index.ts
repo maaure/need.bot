@@ -4,8 +4,8 @@ import {
   ApplicationCommandType,
 } from "discord.js";
 import AdicionarJogadorService from "./adicionar-jogador.service.js";
-import AutocompleteTeamService from "./autocomplete-time.service.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
+import AutocompleteMemberTeam from "#services/autocomplete-team-sair.service.js";
+import { InteractionMethods } from "#services/interaction-methods.service.js";
 
 createCommand({
   name: "adicionar-jogador",
@@ -27,7 +27,7 @@ createCommand({
     },
   ],
   async autocomplete(interaction) {
-    return await AutocompleteTeamService(interaction);
+    return await AutocompleteMemberTeam(interaction);
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);

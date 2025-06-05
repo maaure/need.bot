@@ -3,9 +3,9 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
-import { InteractionMethods } from "discord/services/interaction-methods.service.js";
 import DefinirCapitaoService from "./definir-capitao.service.js";
-import AutocompleteTeamService from "../adicionar-jogador/autocomplete-time.service.js";
+import AutocompleteMemberTeam from "#services/autocomplete-team-sair.service.js";
+import { InteractionMethods } from "#services/interaction-methods.service.js";
 
 createCommand({
   name: "definir-capitao",
@@ -27,12 +27,11 @@ createCommand({
   ],
   type: ApplicationCommandType.ChatInput,
   async autocomplete(interaction) {
-    return await AutocompleteTeamService(interaction);
+    return await AutocompleteMemberTeam(interaction);
   },
   async run(interaction) {
     const methods = InteractionMethods(interaction);
     await methods.deferReply();
     await DefinirCapitaoService(methods);
-    // Implementar a lógica para definir o capitão do time
   },
 });

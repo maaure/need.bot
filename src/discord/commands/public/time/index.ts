@@ -12,6 +12,7 @@ import CriarTimeService from "../../../services/criar-time.service.js";
 import AdicionarJogadorService from "../../../services/adicionar-jogador.service.js";
 import RemoverJogadorTimeService from "#services/remover-jogador-time.service.js";
 import DefinirCapitaoService from "../../../services/definir-capitao.service.js";
+import ApagarTimeService from "#services/apagar-time.service.js";
 
 createCommand({
   name: "time",
@@ -146,11 +147,11 @@ createCommand({
   ],
   async autocomplete(interaction) {
     const focusedOption = interaction.options.getFocused(true);
-    console.log(focusedOption);
 
     switch (focusedOption.name) {
       case "time":
-        return await AutocompleteMemberTeam({ interaction });
+        const listAll = interaction.options.getSubcommand() === "excluir";
+        return await AutocompleteMemberTeam({ interaction, listAll });
       case "cor":
         logger.info("Autocomplete de cor solicitado");
         return await AutocompleteColor({ interaction });
@@ -174,6 +175,10 @@ createCommand({
 
       case "expulsar-jogador":
         await RemoverJogadorTimeService(methods);
+        return;
+
+      case "excluir":
+        await ApagarTimeService(methods);
         return;
 
       case "definir-capitao":

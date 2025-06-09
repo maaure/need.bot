@@ -13,6 +13,8 @@ import AdicionarJogadorService from "../../../services/adicionar-jogador.service
 import RemoverJogadorTimeService from "#services/remover-jogador-time.service.js";
 import DefinirCapitaoService from "../../../services/definir-capitao.service.js";
 import ApagarTimeService from "#services/apagar-time.service.js";
+import AlterarCorTimeService from "#services/alterar-cor-time.service.js";
+import ListarJogadoresService from "#services/listar-jogadores.service.js";
 
 createCommand({
   name: "time",
@@ -130,7 +132,7 @@ createCommand({
         },
       ],
     },
-    {
+    /* {
       name: "excluir",
       description: "Exclua um time do servidor.",
       type: ApplicationCommandOptionType.Subcommand,
@@ -138,6 +140,41 @@ createCommand({
         {
           name: "time",
           description: "Selecione o time a ser excluído.",
+          type: ApplicationCommandOptionType.String,
+          required,
+          autocomplete,
+        },
+      ],
+    }, */
+    {
+      name: "mudar-cor",
+      description: "Mude a cor do seu time",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "time",
+          description: "Selecione o time a ser ter a cor alterada.",
+          type: ApplicationCommandOptionType.String,
+          required,
+          autocomplete,
+        },
+        {
+          name: "cor",
+          description: "Selecione a cor do cargo do time.",
+          type: ApplicationCommandOptionType.String,
+          autocomplete,
+          required,
+        },
+      ],
+    },
+    {
+      name: "listar-jogadores",
+      description: "Liste os jogadores cadastrados em um time",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "time",
+          description: "Selecione o time a ser ter a cor alterada.",
           type: ApplicationCommandOptionType.String,
           required,
           autocomplete,
@@ -153,7 +190,6 @@ createCommand({
         const listAll = interaction.options.getSubcommand() === "excluir";
         return await AutocompleteMemberTeam({ interaction, listAll });
       case "cor":
-        logger.info("Autocomplete de cor solicitado");
         return await AutocompleteColor({ interaction });
       default:
         return [];
@@ -177,9 +213,9 @@ createCommand({
         await RemoverJogadorTimeService(methods);
         return;
 
-      case "excluir":
-        await ApagarTimeService(methods);
-        return;
+      // case "excluir":
+      //   await ApagarTimeService(methods);
+      //   return;
 
       case "definir-capitao":
         await DefinirCapitaoService(methods);
@@ -187,8 +223,18 @@ createCommand({
 
       case "sair":
         await RemoverJogadorTimeService(methods);
+        return;
+
+      case "mudar-cor":
+        await AlterarCorTimeService(methods);
+        return;
+
+      case "listar-jogadores":
+        await ListarJogadoresService(methods);
+        return;
 
       default:
+        methods.editReply("Comando não encontrado.");
         return;
     }
   },

@@ -2,6 +2,7 @@ import { prisma } from "#database";
 import { InteractionMethodsType } from "#services/interaction-methods.service.js";
 import { logger } from "#settings";
 import type { PrismaClient } from "@prisma/client";
+import { PermissionFlagsBits } from "discord.js";
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -79,6 +80,7 @@ export default async function RemoverJogadorTimeService(
 ) {
   const teamNameOption = methods.getString("time", required);
   const leavingGuildMember = methods.getMember("jogador") ?? methods.member;
+  const requester = methods.member;
 
   const leavingPlayerEntity = await prisma.player.findUnique({
     where: { guildMemberId: leavingGuildMember.id },
@@ -93,15 +95,27 @@ export default async function RemoverJogadorTimeService(
   const teamEntity = await prisma.team.findUnique({
     where: { name: teamNameOption },
     include: {
-      captain: true, // Player record of the captain
+      captain: true,
       _count: {
-        select: { players: true }, // Count of players (TeamParticipation)
+        select: { players: true },
       },
     },
   });
 
   if (!teamEntity) {
     throw new Error(`O time "${teamNameOption}" não foi encontrado.`);
+  }
+
+  if (leavingGuildMember.id !== requester.id) {
+    const isAdmin = requester.permissions?.has?.(
+      PermissionFlagsBits.Administrator
+    );
+    const isCaptain = teamEntity.captain?.guildMemberId === requester.id;
+    if (!isAdmin && !isCaptain) {
+      throw new Error(
+        "Apenas o capitão do time ou um administrador pode remover outro jogador do time."
+      );
+    }
   }
 
   const participation = await prisma.teamParticipation.findUnique({

@@ -31,10 +31,17 @@ export default async function CriarTimeService(
   const modalidade = getString("modalidade");
   const teamColor = getString("cor") as keyof typeof Colors;
 
-  console.log(teamName, typeof teamName);
   if (!teamName) {
     logger.error("Nome do time não informado.");
     throw new Error("Nome do time não informado.");
+  }
+
+  const invalidMentionRegex = /<(@(&|!)?|#)\d{17,19}>/;
+  if (invalidMentionRegex.test(teamName)) {
+    logger.error(
+      "O usuário inseriu uma menção em um campo inválido, suspendendo operação."
+    );
+    throw new Error("O nome do time não pode ser uma menção do Discord.");
   }
 
   if (!capitao) {

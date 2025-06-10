@@ -4,7 +4,6 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
-import { logger } from "#settings";
 import getModalidadesChoices from "#utils/modalidades.service.js";
 import AutocompleteMemberTeam from "#services/autocomplete-team-sair.service.js";
 import AutocompleteColor from "#services/autocomplete-cor.service.js";
@@ -12,9 +11,8 @@ import CriarTimeService from "../../../services/criar-time.service.js";
 import AdicionarJogadorService from "../../../services/adicionar-jogador.service.js";
 import RemoverJogadorTimeService from "#services/remover-jogador-time.service.js";
 import DefinirCapitaoService from "../../../services/definir-capitao.service.js";
-import ApagarTimeService from "#services/apagar-time.service.js";
-import AlterarCorTimeService from "#services/alterar-cor-time.service.js";
 import ListarJogadoresService from "#services/listar-jogadores.service.js";
+import AlterarCorTimeService from "#services/alterar-cor-time.service.js";
 
 createCommand({
   name: "time",

@@ -83,6 +83,23 @@ export default async function CriarTimeService(
       throw new Error(`Modalidade "${modalidade}" não encontrada.`);
     }
 
+    // Regra: só pode estar em um time por modalidade
+    const participacaoMesmaModalidade =
+      await prisma.teamParticipation.findFirst({
+        where: {
+          playerId: playerEntity.id,
+          team: {
+            modalityId: modalityEntity.id,
+          },
+        },
+        include: { team: true },
+      });
+    if (participacaoMesmaModalidade) {
+      throw new Error(
+        `O jogador já está no time "${participacaoMesmaModalidade.team.name}" da modalidade "${modalityEntity.name}".\nNão é permitido um jogador estar em mais de um time da mesma modalidade.`
+      );
+    }
+
     await prisma.$transaction([
       prisma.teamParticipation.create({
         data: {

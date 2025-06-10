@@ -108,6 +108,32 @@ export default async function AdicionarJogadorService(
     throw new Error(message);
   }
 
+  // Regra: só pode estar em um time por modalidade
+  // Busca a modalidade do time
+  const teamWithModality = await prisma.team.findUnique({
+    where: { id: teamEntity.id },
+    include: { modality: true },
+  });
+  if (!teamWithModality?.modality) {
+    throw new Error("A modalidade do time não foi encontrada.");
+  }
+  // Verifica se o jogador já está em outro time dessa modalidade
+  const participacaoMesmaModalidade = await prisma.teamParticipation.findFirst({
+    where: {
+      playerId: playerEntity.id,
+      team: {
+        modalityId: teamWithModality.modality.id,
+        id: { not: teamEntity.id },
+      },
+    },
+    include: { team: true },
+  });
+  if (participacaoMesmaModalidade) {
+    throw new Error(
+      `O jogador ${playerEntity.name} já está no time "${participacaoMesmaModalidade.team.name}" da modalidade "${teamWithModality.modality.name}".`
+    );
+  }
+
   // 3. Adicionar o jogador ao time criando um registro em TeamParticipation
   await prisma.teamParticipation.create({
     data: {

@@ -12,7 +12,6 @@ interface SetupServiceParams {
 
 export default async function SetupService({ methods }: SetupServiceParams) {
   const { messageStack } = methods;
-  await methods.deferReply();
 
   await messageStack.push(
     "🚀 Iniciando a configuração do servidor. Isso pode levar alguns minutos..."

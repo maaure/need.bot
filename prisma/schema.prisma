@@ -3,61 +3,59 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model Player {
-  id            String @id @default(uuid())
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  guildMemberId String @unique /// identifica qual usuário do discord é o jogador
+  guildMemberId String @unique
 
-  teams TeamParticipation[]
-
-  captainOf Team[] @relation("TeamCaptain")
+  teams     TeamParticipation[]
+  captainOf Team[]              @relation("TeamCaptain")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Modality {
-  id   String @id @default(uuid())
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
 
   teams  Team[]
-  roleId String @unique // Indica qual cargo do servidor do discord é o responsável por essa modalidade
+  roleId String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Team {
-  id   String @id @default(uuid())
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
 
   players TeamParticipation[]
 
-  captainId String?
-  captain   Player? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  captainId String? @db.ObjectId
+  captain   Player? @relation("TeamCaptain", fields: [captainId], references: [id], onDelete: SetNull)
 
-  modalityId String?
+  modalityId String?   @db.ObjectId
   modality   Modality? @relation(fields: [modalityId], references: [id])
 
-  roleId String @unique // Indica qual cargo do servidor do discord é o responsável por essa modalidade
+  roleId String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model TeamParticipation {
-  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  playerId String
-
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String
-
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId   String   @db.ObjectId
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId     String   @db.ObjectId
   assignedAt DateTime @default(now())
 
-  @@id([playerId, teamId])
+  @@unique([playerId, teamId])
   @@map("player_team_memberships")
 }

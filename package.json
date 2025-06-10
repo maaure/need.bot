@@ -10,6 +10,7 @@
     "watch": "tsx --watch --env-file .env ./src/index.ts",
     "watch:dev": "tsx --watch --env-file .env.dev ./src/index.ts",
     "start": "node --env-file .env .",
+    "deploy": "prisma migrate dev && node --env-file .env .",
     "start:dev": "node --env-file .env.dev .",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",

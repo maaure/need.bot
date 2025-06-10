@@ -113,7 +113,7 @@ export default async function AdicionarJogadorService(methods) {
     });
     // 4. Adicionar o cargo do time ao jogador no Discord
     await player.roles.add(teamRole);
-    const successMessage = `O jogador ${methods.member.displayName} foi adicionado ao time ${teamEntity.name} com sucesso!`;
+    const successMessage = `O jogador ${playerEntity.name} foi adicionado ao time ${teamEntity.name} com sucesso!`;
     logger.log(successMessage);
     await methods.followUp(successMessage);
 }

@@ -5,8 +5,8 @@ import {
   ApplicationCommandType,
   PermissionFlagsBits,
 } from "discord.js";
-import SetupService from "../setup/setup.service.js";
 import SyncService from "#services/sync.service.js";
+import SetupService from "#services/setup.service.js";
 
 createCommand({
   name: "admin",
